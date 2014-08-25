@@ -1,0 +1,14 @@
+;
+; rexxcurl32.def
+;
+LIBRARY rexxcurl INITINSTANCE
+HEAPSIZE 40960
+STACKSIZE 10240
+EXPORTS CurlCleanup
+EXPORTS CurlDropFuncs
+EXPORTS CurlGetinfo
+EXPORTS CurlInit
+EXPORTS CurlLoadFuncs
+EXPORTS CurlPerform
+EXPORTS CurlSetopt
+EXPORTS CurlVariable

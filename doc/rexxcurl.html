@@ -1,0 +1,825 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD><TITLE>Rexx/CURL</TITLE>
+<BODY aLink=#808000 bgColor=#ffffff link=#0000ff vLink=#ff0022>
+<CENTER><IMG alt=Rexx/CURL height=64 hspace=20 src="rxcurl64.png"width=64>
+<H1>A Rexx interface to the cURL library</H1>Version 1.0
+<P>4 July 2001</CENTER>
+<P>
+<P align=center>
+<HR>
+<!-- END-HEADER -->
+
+<!-- START-TOC -->
+<H2><B>Table of Contents</B></H2>
+<DL>
+  <DT><A href="#INTRODUCTION">1. Introduction</A><BR></dt>
+  <DT><A href="#OVERVIEW">2. Overview</A><BR></dt>
+  <DT><A href="#FUNCTIONS">3. Functions</A><BR></dt>
+  <DD><A href="#CURLINIT">CURLINIT</A></dd>
+  <DD><A href="#CURLCLEANUP">CURLCLEANUP</A></dd>
+  <DD><A href="#CURLSETOPT">CURLSETOPT</A></dd>
+  <DD><A href="#CURLPERFORM">CURLPERFORM</A></dd>
+  <DD><A href="#CURLGETINFO">CURLGETINFO</A></dd>
+  <DD><A href="#CURLVARIABLE">CURLVARIABLE</A></dd>
+  <DD><A href="#CURLLOADFUNCS">CURLLOADFUNC</A></dd>
+  <DD><A href="#CURLDROPFUNCS">CURLDROPFUNC</A></dd>
+  <DT><A href="#ERRORS">4. Errors</A><BR></dt>
+  <DT><A href="#USING">5. Using Rexx/CURL</A><BR></dt>
+  <DT><A href="#HISTORY">6. History of Rexx/CURL</A><BR></dt>
+</DL>
+<!-- END-TOC -->
+<P align=center>
+<HR>
+
+<!-- START-INTRODUCTION -->
+<H2><A name=INTRODUCTION><B>1. Introduction</B></A></H2>This document describes the
+interface to the <a href="http://curl.haxx.se">cURL</a> package. cURL is a general purpose
+package that allows access to any URL-addressable resource. With Rexx/CURL you can
+access resources such as web pages, ftp sites, and telnet sessions under
+control of your Rexx program. Rexx/CURL is actually built on top of <a href="http://curl.haxx.se/libcurl/">libcurl</a>
+but for the purposes of this document it will be refered to simply as cURL.
+<!-- END-INTRODUCTION -->
+<P align=center>
+<HR>
+
+<!-- START-OVERVIEW -->
+<H2><A name=OVERVIEW><B>2. Overview</B></A></H2>Rexx/CURL consists of Rexx
+external functions that allows a Rexx program to access any URL. The basic concept
+of Rexx/CURL (and cURL), is that you specify a URL and all options appropriate
+to that URL, and then perform the URL access.
+<br>See <A href="#USING">Using Rexx/CURL</a> for more details.
+<P>
+<P>The Rexx/CURL external functions are:
+<UL>
+  <LI><B>CURLINIT</B> - initialise the cURL interface
+  <LI><B>CURLCLEANUP</B> - cleanup the cURL interface
+  <LI><B>CURLSETOPT</B> - defines all the options appropriate to the type of URL you wish to access
+  <LI><B>CURLPERFORM</B> - carries out the actions defined by the various calls to CURLSETOPT
+  <LI><B>CURLGETINFO</B> - return information about the action carried out by CURLPERFORM
+  <LI><B>CURLVARIABLE</B> - set or retrieve default run-time values
+</ul>
+<UL>
+  <LI><B>CURLLOADFUNCS</B> - load all Rexx/CURL external functions
+  <LI><B>CURLDROPFUNCS</B> - unload all Rexx/CURL external functions
+</ul>
+<!-- END-OVERVIEW -->
+<P align=center>
+<HR>
+
+<!-- START-FUNCTIONS -->
+<H2><A name=FUNCTIONS><B>3. Functions</B></A></H2>This section provides the full 
+syntax and usage of each function that comprises Rexx/CURL. 
+<!-- END-FUNCTIONS -->
+<p>
+<!-- START-CURLINIT -->
+<table border=0 width="100%">
+  <tr>
+    <td bgcolor="#FFE745" valign=center>
+      <b><A name=CURLINIT>CURLINIT()</A></b>
+    </td>
+  </tr>
+</table>
+Initialises the cURL interface. The return value from this call is used
+as the first argument to most of the other Rexx/CURL functions.
+<P><B>Arguments:</B> 
+<DL>
+  <DT><B><I>none</I></B> </DT>
+</DL>
+<B>Returns:</B> 
+<DL>
+  <DT><I>success:</I> 
+    <dd>any non-blank value</dd>
+  </dt>
+  <DT><I>failure:</I> 
+    <dd>blank</dd>
+  </DT>
+</DL>
+<!-- END-CURLINIT -->
+<p>
+<!-- START-CURLSETOPT -->
+<table border=0 width="100%">
+  <tr>
+    <td bgcolor="#FFE745" valign=center>
+    <B><A name=CURLCONNECT>CURLSETOPT(<I>handle</I>, <I>option</I>,<I>option value</I>)</A></b>
+    </td>
+  </tr>
+</table>
+This function is called to define all the parameters and data required to
+carry out the particular request. The <i>option</i> argument is case-insensitive.
+The table below defining the options available contains the equivalent cURL option
+value used in the C/C++ interface.  Not all of the Rexx/CURL option strings are
+the same as the C/C++ equivalents; I've tried to be more consistent and clearer
+with the name of the option.  The C/C++ equivalents are there if you wish
+to read alternate definitions of these options. See the curl_easy_setopt() function
+documentation.
+<P>
+<B>Arguments:</B> 
+<DL>
+  <DT><B><I>handle</I></B>
+    <DD>The value returned from <a href="#CURLINIT">CURLINIT</A>.</dd>
+  </dt>
+  <P></P>
+  <DT><B><I>option</I></B>
+  <DD>This is the string identifying the option to set.
+  <table border=1>
+    <tr>
+      <th>Rexx/CURL<br>Option</th>
+      <th>Description</th>
+      <th>cURL Equivalent<br>Option</th>
+    </tr>
+    <tr>
+      <td>CLOSEPOLICY</td>
+      <td>Specify the type of disconnection policy to use if the connection cache is filled. This is only applicable if you potentially use more than 5 concurrent connections. Can be one of <b>OLDEST</b>, or <b>LEAST_RECENTLY_USED</b>.</td>
+      <td>CURLOPT_CLOSEPOLICY</td>
+    </tr>
+    <tr>
+      <td>CONNECTTIMEOUT</td>
+      <td>To limit the time it takes to connect to the server, set this value to the number of seconds.</td>
+      <td>CURLOPT_CONNECTTIMEOUT</td>
+    </tr>
+    <tr>
+      <td>COOKIE</td>
+      <td>If you want to pass a cookie to the server, set this option to the cookie. The format of the cookie is: <i>name=contents</i>, where <i>name</i> is the name of the cookie to be set.</td>
+      <td>CURLOPT_COOKIE</td>
+    </tr>
+    <tr>
+      <td>COOKIEFILE</td>
+      <td>The name of a file from which cookie data is read for the performed action. The cookie file can contain Netscape/Mozilla formated cookies, or regular HTTP header format. This file must exist.</td>
+      <td>CURLOPT_COOKIEFILE</td>
+    </tr>
+    <tr>
+      <td>CUSTOMREQUEST</td>
+      <td>To carry out an HTTP request command other than GET or HEAD, pass the command in this option.</td>
+      <td>CURLOPT_CUSTOMREQUEST</td>
+    </tr>
+    <tr>
+      <td>EGDSOCKET</td>
+      <td>The name of the Entropy Gathering Socket which is used to seed the SSL random engine.</td>
+      <td>CURLOPT_EGDSOCKET</td>
+    </tr>
+    <tr>
+      <td>ERRFILE</td>
+      <td>The name of a file into which any error output from the performed action is written. If this file exists, it will be over-written</td>
+      <td>CURLOPT_STDERR</td>
+    </tr>
+    <tr>
+      <td>FAILONERROR</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to get cURL to fail, rather than return the page, if the HTTP return code is greater than or equal to 300.</td>
+      <td>CURLOPT_FAILONERROR</td>
+    </tr>
+    <tr>
+      <td>FILETIME</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to indicate that cURL should attempt to retrieve the modification date of the remote document. Not all servers will respond to this type of request. To retrieve the date, call 
+          <A href="#CURLGETINFO">CURLGETINFO</A> with the <b>FILE_TIME</b> option.</td>
+      <td>CURLOPT_FILETIME</td>
+    </tr>
+    <tr>
+      <td>FOLLOWLOCATION</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to get cURL to follow any <i>Location:</i> headers in the specified site.</td>
+      <td>CURLOPT_FOLLOWLOCATION</td>
+    </tr>
+    <tr>
+      <td>FORBIDREUSE</td>
+      <td>TBD</td>
+      <td>CURLOPT_FORBID_REUSE</td>
+    </tr>
+    <tr>
+      <td>FRESHCONNECT</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to indicate that the next transfer should use a new connection.</td>
+      <td>CURLOPT_FRESH_CONNECT</td>
+    </tr>
+    <tr>
+      <td>FTPAPPEND</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to indicate that the remote file is to be appended to rather than replaced when an FTP upload is to be carried out.</td>
+      <td>CURLOPT_FTPAPPEND</td>
+    </tr>
+    <tr>
+      <td>FTPCMDSAFTER</td>
+      <td>A list of FTP commands to be executed <b>after</b> the URL is accessed. The list of commands is specified as a stem name; ie the supplied string must end in a period, and represent a valid Rexx <i>array</i>.</td>
+      <td>CURLOPT_POSTQUOTE</td>
+    </tr>
+    <tr>
+      <td>FTPCMDSBEFORE</td>
+      <td>A list of FTP commands to be executed <b>before</b> the URL is accessed. The list of commands is specified as a stem name; ie the supplied string must end in a period, and represent a valid Rexx <i>array</i>.</td>
+      <td>CURLOPT_QUOTE</td>
+    </tr>
+    <tr>
+      <td>FTPCRLF</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to indicate that LF charcaters should be converted to CRLF on FTP uploads.</td>
+      <td>CURLOPT_CRLF</td>
+    </tr>
+    <tr>
+      <td>FTPLISTONLY</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to indicate that only filenames are to be returned when the <b>URL</b> option specifies an FTP directory. Normally, file sizes, dates etc. are returned.</td>
+      <td>CURLOPT_FTPLISTONLY</td>
+    </tr>
+    <tr>
+      <td>FTPPORT</td>
+      <td>Set this option to a string to use as the parameter to the FTP <i>PORT</i> command. The parameter can be an IP address, a hostname, an interface name (undex Unix), or '-' to use the client machine's default IP address.</td>
+      <td>CURLOPT_FTPPORT</td>
+    </tr>
+    <tr>
+      <td>HEADER</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to get cURL to return header information for those protocols, like HTTP, that have seperate headers and footers.</td>
+      <td>CURLOPT_HEADER</td>
+    </tr>
+    <tr>
+      <td>HEADERFILE</td>
+      <td>The name of a file into which headers from the performed action are written. If this file exists, it will be over-written</td>
+      <td>CURLOPT_WRITEHEADER</td>
+    </tr>
+    <tr>
+      <td>HEADERSTEM</td>
+      <td>Specify the stem variable of an array into which any headers from the performed action are written. If the array exists, it will be over-written. Where possible, each entry in the array will contain a single line.</td>
+      <td>CURLOPT_WRITEHEADER</td>
+    </tr>
+    <tr>
+      <td>HTTPHEADER</td>
+      <td>To pass a series of HTTP headers to the server, set this option to a valid Rexx stem. Any headers included in this option, that would have normally been generated internally by cURL, will be replaced.</td>
+      <td>CURLOPT_HTTPHEADER</td>
+    </tr>
+    <tr>
+      <td>HTTPPOST</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to indicate that a <i>regular</i> (application/x-www-form-urlencoded) HTTP POST is to be carried out. Most HTTP forms are of this type. See <b>POSTFIELDS</b> for details on how to specify the content of the form fields.</td>
+      <td>CURLOPT_POST</td>
+    </tr>
+    <tr>
+      <td>HTTPPOSTDATA</td>
+      <td>Setting this option indicates that you wish to issue a multipart/formdata HTTP POST. You pass the data that is posted as a valid Rexx stem.</td>
+      <td>CURLOPT_HTTPPOST</td>
+    </tr>
+    <tr>
+      <td>HTTPPOSTFIELDS</td>
+      <td>Specify the content of the fields to be filled in with a <b>HTTPPOST</b>. The passed parameter is a Rexx array, with each item in the array a name/value pair. eg field.1 = 'email=M.Hessling@qut.edu.au'</td>
+      <td>CURLOPT_POSTFIELDS<br>CURLOPT_POSTFIELDSIZE</td>
+    </tr>
+    <tr>
+      <td>HTTPPROXYTUNNEL</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to tunnel all non-http operations through the HTTP proxy.</td>
+      <td>CURLOPT_HTTPPROXYTUNNEL</td>
+    </tr>
+    <tr>
+      <td>HTTPPUT</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to get indicate that a HTTP PUT command is issued for the URL. The file to be uploaded must be specified with <b>INFILE</b>.</td>
+      <td>CURLOPT_PUT</td>
+    </tr>
+    <tr>
+      <td>INFILE</td>
+      <td>The name of a file from which data is read for the performed action. This file must exist. For ftp uploads, this is the file to upload.</td>
+      <td>CURLOPT_INFILE<br>CURLOPT_INFILESIZE</td>
+    </tr>
+    <tr>
+      <td>INTERFACE</td>
+      <td>To specify an outgoing interface other than the default, pass the interface in this option. The interface can be specified as an IP address, a hostname, or an interface name (undex Unix).</td>
+      <td>CURLOPT_INTERFACE</td>
+    </tr>
+    <tr>
+      <td>KRB4LEVEL</td>
+      <td>TBD</td>
+      <td>CURLOPT_KRB4LEVEL</td>
+    </tr>
+    <tr>
+      <td>LOWSPEEDLIMIT</td>
+      <td>This option should contain a number representing the bytes per second that cURL will use as the lowest transfer rate to run at before it aborts the session as being too slow.</td>
+      <td>CURLOPT_LOW_SPEED_LIMIT</td>
+    </tr>
+    <tr>
+      <td>LOWSPEEDTIME</td>
+      <td>This option should contain a number representing the number of seconds that cURL will use as the lowest transfer time to run for before it aborts the session as being too slow.</td>
+      <td>CURLOPT_LOW_SPEED_TIME</td>
+    </tr>
+    <tr>
+      <td>MAXCONNECTS</td>
+      <td>You can specify how many persistent connections cURL is to maintain. The default is 5 and unless you know what you are doing leave it alone.</td>
+      <td>CURLOPT_MAXCONNECTS</td>
+    </tr>
+    <tr>
+      <td>MAXREDIRS</td>
+      <td>To limit the number of redirections followed, set this value with this option. This option only makes sense when <b>FOLLOWLOCATION</b> is also set.</td>
+      <td>CURLOPT_MAXREDIRS</td>
+    </tr>
+    <tr>
+      <td>NETRC</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to get cURL to read your ~/.netrc for the username and password for the remote site.</td>
+      <td>CURLOPT_NETRC</td>
+    </tr>
+    <tr>
+      <td>NOBODY</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to get cURL to <b>not</b> return the body information for those protocols, like HTTP, that have seperate headers and footers.</td>
+      <td>CURLOPT_NOBODY</td>
+    </tr>
+    <tr>
+      <td>OUTFILE</td>
+      <td>The name of a file into which any output from the performed action is written. If this file exists, it will be over-written.</td>
+      <td>CURLOPT_FILE</td>
+    </tr>
+    <tr>
+      <td>OUTSTEM</td>
+      <td>Specify the stem variable of an array into which any output from the performed action is written. If the array exists, it will be over-written. Where possible, each entry in the array will contain a single line.</td>
+      <td>CURLOPT_FILE</td>
+    </tr>
+    <tr>
+      <td>PROXY</td>
+      <td>If you need to use a HTTP proxy to access the outside world, specify it with this option. The format of the proxy string is <i>host[:port]</i>. The default port number is 1080.</td>
+      <td>CURLOPT_PROXY</td>
+    </tr>
+    <tr>
+      <td>PROXYUSERPWD</td>
+      <td>Specify the username/password to use for the the HTTP proxy connection. The format is </i>username[:password]</i>. If the password is omitted, you will be prompted for it.</td>
+      <td>CURLOPT_PROXYUSERPWD</td>
+    </tr>
+    <tr>
+      <td>RANDOMFILE</td>
+      <td>The name of a file from which is used to seed the SSL random engine. This file must exist.</td>
+      <td>CURLOPT_RANDOM_FILE</td>
+    </tr>
+    <tr>
+      <td>RANGE</td>
+      <td>Specify the required range you want in the format <i>X-Y</i>. I have no idea what this is!</td>
+      <td>CURLOPT_RANGE</td>
+    </tr>
+    <tr>
+      <td>REFERER</td>
+      <td>Set this option to a string to set the header field: <i>referer:</i> in the HTTP request.</td>
+      <td>CURLOPT_REFERER</td>
+    </tr>
+    <tr>
+      <td>RESUMEFROM</td>
+      <td>Set this option to the byte at which you want a request to start from. This is particularly useful for restarting an FTP download that was interrupted.</td>
+      <td>CURLOPT_RESUME_FROM</td>
+    </tr>
+    <tr>
+      <td>SSLCERT</td>
+      <td>To set a SSL certificate, set this option to the filename containing the certificate. The certificate should be in PEM format.</td>
+      <td>CURLOPT_SSLCERT</td>
+    </tr>
+    <tr>
+      <td>SSLCERTPASSWD</td>
+      <td>The password associated with the SSL certificate set by <b>SSLCERT</b> can be set with this option. If you don't supply the password with this option, you will be prompted for it.</td>
+      <td>CURLOPT_SSLCERTPASSWD</td>
+    </tr>
+    <tr>
+      <td>SSLPEERCERT</td>
+      <td>The name of a file from which the SLL peer certificate data is read for the performed action. This file must exist.</td>
+      <td>CURLOPT_CAINFO</td>
+    </tr>
+    <tr>
+      <td>SSLVERIFYPEER</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to indicate that the SSL peer's certificate should be verified. The SSL peer certificate must be specified with the <b>SSLPEERCERT</b> option.</td>
+      <td>CURLOPT_SSL_VERIFYPEER</td>
+    </tr>
+    <tr>
+      <td>SSLVERSION</td>
+      <td>To over-ride the default SSL version used, pass this option in as a number.</td>
+      <td>CURLOPT_SSLVERSION</td>
+    </tr>
+    <tr>
+      <td>TIMECONDITION</td>
+      <td>TBD</td>
+      <td>CURLOPT_TIMECONDITION</td>
+    </tr>
+    <tr>
+      <td>TIMEOUT</td>
+      <td>Specify the number of seconds in which the whole transaction is to complete. Note that this timeout period also includes the time taken to do name lookups, so don't specify too short a period.</td>
+      <td>CURLOPT_TIMEOUT</td>
+    </tr>
+    <tr>
+      <td>TIMEVALUE</td>
+      <td>TBD</td>
+      <td>CURLOPT_TIMEVALUE</td>
+    </tr>
+    <tr>
+      <td>TRANSFERTEXT</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to get indicate that FTP transfers are to be done in ASCII mode. For LDAP requests, the details are returned in plain text rather than HTML.</td>
+      <td>CURLOPT_TRANSFERTEXT</td>
+    </tr>
+    <tr>
+      <td>UPLOAD</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to indicate that an upload is to be done, rather than a download.</td>
+      <td>CURLOPT_UPLOAD</td>
+    </tr>
+    <tr>
+      <td>USERAGENT</td>
+      <td>Set this option to a string to set the header field: <i>user-agent:</i> in the HTTP request. This can be useful to imitate different browser clients.</td>
+      <td>CURLOPT_USERAGENT</td>
+    </tr>
+    <tr>
+      <td>USERPWD</td>
+      <td>Specify the username/password to use for this connection. The format is </i>username[:password]</i>. If the password is omitted, you will be prompted for it.</td>
+      <td>CURLOPT_USERPWD</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>The URL against which the access is to be made.</td>
+      <td>CURLOPT_URL</td>
+    </tr>
+    <tr>
+      <td>VERBOSE</td>
+      <td>Set this option to a <b>1</b> or <b>Y</b> to get cURL to display lots of details about what it is doing.</td>
+      <td>CURLOPT_VERBOSE</td>
+    </tr>
+  </table>
+  <P></P>
+  </dt>
+  <DT><B><I>option value</I></B>
+    <DD>The value of the option to set.</dd>
+  <P></P>
+</DL>
+<B>Returns:</B> 
+<DL>
+  <DT><I>success:</I> 
+    <dd>blank</dd>
+  </dt>
+  <DT><I>failure:</I> 
+    <dd>blank</dd>
+    <dd>On <i>failure</i> <b>CURLERROR.INTCODE</b> is set to a non-zero value.
+        If this value is 1 (one) then <b>CURLERROR.CURLCODE</b> is also set
+        to a non-zero value.
+    </dd>
+  </DT>
+</DL>
+<!-- END-CURLSETOPT -->
+<p>
+<!-- START-CURLPERFORM -->
+<table border=0 width="100%">
+  <tr>
+    <td bgcolor="#FFE745" valign=center>
+      <b><A name=CURLPERFORM>CURLPERFORM(<I>handle</I>)</A></b>
+    </td>
+  </tr>
+</table>
+Once all the options have been set up, call this function to carry out
+the transfer.
+<P><B>Arguments:</B> 
+<DL>
+  <DT><B><I>handle</I></B>
+    <DD>The value returned from <a href="#CURLINIT">CURLINIT</A>.</dd>
+    <P></P>
+  </dt>
+</DL>
+<B>Returns:</B> 
+<DL>
+  <DT><I>success:</I> 
+    <dd>blank</dd>
+  </dt>
+  <DT><I>failure:</I> 
+    <dd>blank</dd>
+    <dd>On <i>failure</i> <b>CURLERROR.INTCODE</b> is set to a non-zero value.
+        If this value is 1 (one) then <b>CURLERROR.CURLCODE</b> is also set
+        to a non-zero value.
+    </dd>
+  </DT>
+</DL>
+<!-- END-CURLPERFORM -->
+<p>
+<!-- START-CURLGETINFO -->
+<table border=0 width="100%">
+  <tr>
+    <td bgcolor="#FFE745" valign=center>
+      <b><A name=CURLGETINFO>CURLGETINFO(<I>handle</I>, <i>option</i>)</A></b>
+    </td>
+  </tr>
+</table>
+Sets the
+default database connections to be that which is specified or if no connection 
+name is specified, the current connection name is returned.
+<B>Arguments:</B> 
+<DL>
+  <DT><B><I>handle</I></B>
+  <DD>The value returned from <a href="#CURLINIT">CURLINIT</A>.
+  <P></P>
+  <DT><B><I>option</I></B>
+  <DD>This is the string identifying the information to retrieve.
+  <table border=1>
+    <tr>
+      <th>Rexx/CURL<br>Option</th>
+      <th>Description</th>
+      <th>cURL Equivalent<br>Option</th>
+    </tr>
+    <tr>
+      <td>CONNECT_TIME</td>
+      <td>Returns the number of seconds it took to connect to the remote server.</td>
+      <td>CURLINFO_CONNECT_TIME</td>
+    </tr>
+    <tr>
+      <td>CONTENT_LENGTH_DOWNLOAD</td>
+      <td>Returns the length of the contents returned. This is the value returned by the header field; </i>Content-Length:</i></td>
+      <td>CURLINFO_CONTENT_LENGTH_DOWNLOAD</td>
+    </tr>
+    <tr>
+      <td>CONTENT_LENGTH_UPLOAD</td>
+      <td>Returns the length of the specified upload size.</td>
+      <td>CURLINFO_CONTENT_LENGTH_UPLOAD</td>
+    </tr>
+    <tr>
+      <td>EFFECTIVE_URL</td>
+      <td>Returns the last used effective URL.</td>
+      <td>CURLINFO_EFFECTIVE_URL</td>
+    </tr>
+    <tr>
+      <td>FILE_TIME</td>
+      <td>The time of the remote document received. This is only returned if setopt FILETIME is called. WHT FORMAT? CONVERT TIME_T TO TIME('N')</td>
+      <td>CURLINFO_FILETIME</td>
+    </tr>
+    <tr>
+      <td>HEADER_SIZE</td>
+      <td>Returns the length of all headers returned.</td>
+      <td>CURLINFO_HEADER_SIZE</td>
+    </tr>
+    <tr>
+      <td>HTTP_CODE</td>
+      <td>Returns the last received HTTP code. Only useful if the last URL requested was HTTP.</td>
+      <td>CURLINFO_HTTP_CODE</td>
+    </tr>
+    <tr>
+      <td>NAMELOOKUP_TIME</td>
+      <td>Returns the time in seconds for the time taken to resolve the remote server name.</td>
+      <td>CURLINFO_NAMELOOKUP_TIME</td>
+    </tr>
+    <tr>
+      <td>PRETRANSFER_TIME</td>
+      <td>Returns the total time taken from the start up until the transfer is about to begin. This time includes all pre-transfer commands and negotiations.</td>
+      <td>CURLINFO_PRETRANSFER_TIME</td>
+    </tr>
+    <tr>
+      <td>REQUEST_SIZE</td>
+      <td>Returns the total size of all requests. Note that this may be for more than one request if <b>FOLLOWLOCATION</b> was set.</td>
+      <td>CURLINFO_REQUEST_SIZE</td>
+    </tr>
+    <tr>
+      <td>SIZE_DOWNLAOD</td>
+      <td>Returns the total number of bytes downloaded.</td>
+      <td>CURLINFO_SIZE_DOWNLOAD</td>
+    </tr>
+    <tr>
+      <td>SIZE_UPLOAD</td>
+      <td>Returns the total number of bytes uploaded.</td>
+      <td>CURLINFO_SIZE_UPLOAD</td>
+    </tr>
+    <tr>
+      <td>SPEED_DOWNLOAD</td>
+      <td>Returns the average download speed in bytes OR K? per second.</td>
+      <td>CURLINFO_SPEED_DOWNLOAD</td>
+    </tr>
+    <tr>
+      <td>SPEED_UPLOAD</td>
+      <td>Returns the average upload speed in bytes OR K? per second.</td>
+      <td>CURLINFO_SPEED_UPLOAD</td>
+    </tr>
+    <tr>
+      <td>SSL_VERIFY_RESULT</td>
+      <td>Returns the result of the SSL certificate verification requested by <b>SSLVERIFYPEER</b>.</td>
+      <td>CURLINFO_SSL_VERIFYRESULT</td>
+    </tr>
+    <tr>
+      <td>TOTAL_TIME</td>
+      <td>Returns the time in seconds for the complete transfer.</td>
+      <td>CURLINFO_TOTAL_TIME</td>
+    </tr>
+  </table>
+  <P></P>
+</DL>
+<B>Returns:</B> 
+<DL>
+  <DT><I>success:</I> 
+    <dd>blank</dd>
+  </dt>
+  <DT><I>failure:</I> 
+    <dd>blank</dd>
+    <dd>On <i>failure</i> <b>CURLERROR.INTCODE</b> is set to a non-zero value.
+        If this value is 1 (one) then <b>CURLERROR.CURLCODE</b> is also set
+        to a non-zero value.
+    </dd>
+  </DT>
+</DL>
+<!-- END-CURLGETINFO -->
+<p>
+<!-- START-CURLVARIABLE -->
+<table border=0 width="100%">
+  <tr>
+    <td bgcolor="#FFE745" valign=center>
+      <b><A name=CURLVARIABLE>CURLVARIABLE(<I>variable name</I>[,<I>variable value</I>])</A></b>
+    </td>
+  </tr>
+</table>
+Set or get the value for the specified variable.
+<P>The following variables are available in all implementations: 
+<UL>
+  <LI><B>VERSION</B> <I>(readonly)</I> the version of Rexx/CURL, consisting of:
+    <UL>
+      <LI><I>package name</I> - <B>rexxcurl</B><BR>
+      <LI><I>Rexx/CURL version</I> - numerical version; eg. 1.0<BR>
+      <LI><I>Rexx/CURL date</I> - Rexx standard date format; eg. 4 Jul 2001<BR>
+      <LI><I>OS platform</I> - current operating system<BR>
+      <LI><I>cURL version</I> - version of cURL library: <b>libcurl</b> <i>version</i><BR>
+    </UL>
+    <P>eg. REXXCURL 1.0 4 Jul 2001 UNIX libcurl 7.8
+    <P></P>
+  </ul>
+  <ul>
+  <LI><B>DEBUG</B> <I>(setable)</I> level of debugging requested. 
+    <UL>
+      <LI><I>0</I> - no debugging information displayed (default)
+      <LI><I>1</I> - Rexx variables displayed as set
+        <BR>Equivalent to <I>-v</I> command line flag. 
+      <LI><I>2</I> - function entry/exit information displayed
+        <BR>Equivalent to  <I>-d</I> command line flag. 
+      <LI><I>4</I> - internal tracing information displayed
+        <BR>Equivalent to <I>-D</I> command line flags.
+    </UL>
+    Any of the above values may be added together to combine their effects.
+    eg. 6 is equivalent to -dD on the command line.
+    <P></P>
+  <LI><B>DEBUGFILE</B> <I>(setable)</I> file where debug information is sent.<br>
+    Any valid filename. If the file exists it will be overwritten If not
+    specified, all dubugging information gets written to <i>stderr</i>.
+    <P></P>
+  <LI><B>ERROR</B> <I>(setable)</I> prefix for error code variables.<br>
+    any valid Rexx variable name; usually a stem name. The default is 
+    <b>CURLERROR.</b>
+    <P></P>
+    </UL>
+  </li>
+<P>
+<dl>
+  <dt>
+    <B>Arguments:</B> 
+    <DL>
+      <DT><B><I>variable name</I></B> 
+        <DD>The name of the variable who's value is to be set or retrieved.</dd>
+      </dt>
+      <DT><B><I>variable value</I></B>
+        <DD>The value that the variable to be set to.</DD>
+      </dt>
+    </DL>
+  </dt>
+</dl>
+<B>Returns:</B> 
+<DL>
+  <DT>with <I>variable value</I> specified:
+    <dd><b>success</b></dd>
+    <DD>blank if a valid <I>variable name</I> specified and it is able to be set;</dd>
+    <dd><b>failure</b></dd>
+    <dd>blank and <b>CURLERROR.INTCODE</b> set to a non-zero value.
+    </dd>
+  </dt>
+  <P></P>
+  <DT>with <I>variable value</I> NOT specified: 
+    <dd><b>success</b></dd>
+    <DD>the current value of the variable</dd>
+    <dd><b>failure</b></dd>
+    <dd>blank and <b>CURLERROR.INTCODE</b> is set to a non-zero value.
+    </dd>
+  </dt>
+</DL>
+<!-- END-CURLVARIABLE -->
+<p>
+<!-- START-CURLLOADFUNCS -->
+<table border=0 width="100%">
+  <tr>
+    <td bgcolor="#FFE745" valign=center>
+      <b><A name=CURLLOADFUNCS>CURLLOADFUNCS()</A></b>
+    </td>
+  </tr>
+</table>
+This function is used to load all the Rexx/CURL external functions. This function is called after the function
+has been loaded with the Rexx builtin function rxfuncadd().
+<P>Although this function is useful only for dynamic library implementations of 
+Rexx/CURL, it can be called by the executable version of Rexx/CURL. In this case
+it does nothing. 
+<P><B>Arguments:</B> 
+<DL>
+  <DT><B><I>none</I></B> </DT>
+</DL>
+<B>Returns:</B> 
+<DL>
+  <DT><I>success:</I> 
+    <dd>zero</dd>
+  </dt>
+  <DT><I>failure:</I> 
+    <dd>non-zero</dd>
+  </DT>
+</DL>
+<!-- END-CURLLOADFUNCS -->
+<p>
+<!-- START-CURLDROPFUNCS -->
+<table border=0 width="100%">
+  <tr>
+    <td bgcolor="#FFE745" valign=center>
+      <b><A name=CURLDROPFUNCS>CURLDROPFUNCS()</A></b>
+    </td>
+  </tr>
+</table>
+This function is used to
+terminate Rexx/CURL and free up all resources that have been used.
+<P>It should be called at the end of every Rexx/CURL program. In particular, this
+function should be called after a syntax error has been caught with SIGNAL ON 
+SYNTAX. 
+<P><B>Arguments:</B> 
+<DL>
+  <DT><B><I>none</I></B> </DT>
+</DL>
+<B>Returns:</B> 
+<DL>
+  <DT><I>success:</I> 
+    <dd>zero</dd>
+  </dt>
+  <DT><I>failure:</I> 
+    <dd>non-zero</dd>
+  </DT>
+</DL>
+<!-- END-CURLDROPFUNCS -->
+<P align=center>
+<HR>
+
+<!-- START-ERRORS -->
+<H2><A name=ERRORS><B>4. Errors</B></A></H2>
+The success or failure of each function call is determined by the Rexx compound
+variable; <b>CURLERROR.INTCODE</b>. If the function call succeeds, this will be
+set to zero. If the function call fails, this will be set to a non-zero value.
+If the value set is 1 (one), a cURL error occured, and <b>CURLERROR.CURLCODE</b>
+is set to the appropriate error code. Associated with both error code variables,
+is an equivalent textual error message. These are <b>CURLERROR.INTERRM</b> and
+<b>CURLERROR.CURLERRM</b> respectively.<br>
+The stem name initially set for the error variables is <b>CURLERROR.</b> <i>(including trailing
+period)</i>. You can change this to any value you prefer, with a call to
+<A href="#CURLVARIABLE">CURLVARIABLE</A> with the <b>ERROR</b> argument.
+
+<P><B>Internal Errors:</B> <BR>
+<PRE>
+    1  - Error from cURL
+    2  - Invalid Number
+    3  - Invalid Option
+    4  - Out of memory
+    5  - Invalid cURL handle
+    6  - Invalid filename
+    7  - Invalid boolean
+    8  - Expecting a stem as parameter
+    9  - Invalid variable name specified
+   10  - Attempt to set a readonly variable name
+</PRE>
+<!-- END-ERRORS -->
+<P align=center>
+<HR>
+<!-- START-USING -->
+<H2><A name=USING><B>5. Using Rexx/CURL</B></A></H2>
+A typical Rexx/CURL program looks like the following program. This
+example will simply display the contents of my home page:
+<BLOCKQUOTE><IMG alt=+---------- src="divtop.png">
+<br>
+Call RXFuncAdd 'CURLLoadFuncs','rexxcurl','CURLLoadFuncs'<br>
+Call CURLLoadFuncs<br>
+curl = CURLInit()<br>
+if curl \= '' Then<br>
+   Do<br>
+      Call CURLSetOpt 'URL', "http://www.lightlink.com/hessling/"<br>
+      If curlerror.intcode \= 0 Then Call Abort 'Error setting URL option'<br>
+      Call CURLPerform curl<br>
+      If curlerror.intcode \= 0 Then Call Abort 'Error performing action'<br>
+      Call CURLCleanup curl<br>
+   End<br>
+Call CURLDropFuncs()<br>
+Return 0<br>
+Abort:<br>
+Parse Arg msg<br>
+Say msg<br>
+If curlerror.intcode = 1 Then Say 'Internal error:' curlerror.intcode curlerror.interrm<br>
+Else Say 'CURL error:' curlerror.curlcode curlerror.curlerrm<br>
+Call CURLCleanup curl<br>
+Exit 1<br>
+<IMG   alt=+---------- src="divbot.png"><BR>
+</BLOCKQUOTE>
+
+
+This section will provide some common examples of the use of Rexx/CURL.
+ftp upload   ]
+ftp download ]
+
+http get
+http post
+<P>
+<!-- END-USING -->
+<P align=center>
+<HR>
+<!-- START-HISTORY -->
+<H2><A name=HISTORY><B>History of Rexx/CURL</B></A></H2>
+This section provides details of changes and additions made to the Rexx/CURL interface as it
+evolves.
+<P>
+<P>
+<H3>Version 1.0: 4 Jul 2001</H3>
+<UL>
+  <LI>Initial release for Unix platforms.
+  </LI>
+</UL><!-- END-HISTORY -->
+<HR>
+
+<!-- START-TRAILER -->
+<CENTER>
+  <ADDRESS>Copyright © <A href="http://www.lightlink.com/hessling/">Mark Hessling</A> 2001 &lt;<A href="mailto:M.Hessling@qut.edu.au">M.Hessling@qut.edu.au</A>&gt; </ADDRESS><BR>
+  <HR>
+  <BR>Last updated 9 July 2001<BR>
+</CENTER>
+<!-- END-TRAILER -->
+</BODY>
+</HTML>

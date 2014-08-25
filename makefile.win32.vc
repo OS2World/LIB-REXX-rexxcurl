@@ -1,0 +1,172 @@
+#
+# NMAKE-compatible MAKE file for building Rexx/CURL with VC++
+#
+# will generate:
+#
+#      rexxcurl.dll
+#      rexxcurl.exe
+# 
+# Usage: nmake [DEBUG=1] 
+#              [INT=REGINA|OREXX|WINREXX|QUERCUS|UNIREXX|REXXTRANS]
+#              [rexxcurl.dll|rexxcurl.exe]
+#
+
+PROJ = rexxcurl
+ABBREV = rxcurl
+SRC = rexxcurl
+VER = 10
+VERDOT = 1.0
+
+SRCDIR = $(REXXCURL_SRCDIR)
+COMMONSRCDIR = $(REXXCURL_SRCDIR)\common
+
+REGINA_REXXLIBS = $(REGINA_BINDIR)\regina.lib
+REGINA_REXXINC = -I$(REGINA_SRCDIR) -DUSE_REGINA
+OREXX_REXXLIBS = f:\objrexx\api\rexx.lib e:\mhes\objrexx\api\rexxapi.lib
+OREXX_REXXINC = -If:\objrexx\api -DUSE_OREXX
+WINREXX_REXXLIBS = f:\winrexx\api\rxrexx.lib
+WINREXX_REXXINC = -If:\winrexx\api -DUSE_WINREXX
+QUERCUS_REXXLIBS = f:\quercus\api\wrexx32.lib
+QUERCUS_REXXINC = -If:\quercus\api -DUSE_QUERCUS
+UNIREXX_REXXLIBS = f:\unirexx\api\rx.lib
+UNIREXX_REXXINC = -If:\unirexx\api -DUSE_UNIREXX
+REXXTRANS_REXXLIBS = $(REXXTRANS_BINDIR)\rexxtrans.lib
+REXXTRANS_REXXINC = -I$(REXXTRANS_SRCDIR) -DUSE_REXXTRANS
+
+CURLINCDIR = $(CURLINCDIR)
+CURLLIB = $(CURLLIBDIR)\libcurl.lib wsock32.lib
+
+#---------------------------------------------------------------------
+# You should not have to change anything below here...
+#---------------------------------------------------------------------
+#
+# Interpreter specific defines
+#
+!if "$(INT)" == "REGINA"
+REXXLIBS = $(REGINA_REXXLIBS)
+REXXINC =  $(REGINA_REXXINC)
+!elseif "$(INT)" == "OREXX"
+REXXLIBS = $(OREXX_REXXLIBS)
+REXXINC =  $(OREXX_REXXINC)
+!elseif "$(INT)" == "WINREXX"
+REXXLIBS = $(WINREXX_REXXLIBS)
+REXXINC =  $(WINREXX_REXXINC)
+!elseif "$(INT)" == "QUERCUS"
+REXXLIBS = $(QUERCUS_REXXLIBS)
+REXXINC =  $(QUERCUS_REXXINC)
+!elseif "$(INT)" == "UNIREXX"
+REXXLIBS = $(UNIREXX_REXXLIBS)
+REXXINC =  $(UNIREXX_REXXINC)
+!elseif "$(INT)" == "REXXTRANS"
+REXXLIBS = $(REXXTRANS_REXXLIBS)
+REXXINC =  $(REXXTRANS_REXXINC)
+!else
+!message Rexx Interpreter NOT specified via INT macro
+!message Valid values are: REGINA OREXX WINREXX QUERCUS UNIREXX REXXTRANS
+!error Make aborted!
+!endif
+
+EXTRALINK =
+CCLIBS = user32.lib
+DISTDIR=tmpdir
+
+comcopts = -nologo -W3 -c -DWIN32 -D_CONSOLE -D_MBCS /GX /MD -DNDEBUG -DHAVE_PROTO -I$(COMMONSRCDIR) -I$(CURLINCDIR) $(REXXINC) -I$(SRCDIR)
+comlopts = -nologo -machine:I386 $(EXTRALINK)
+
+!ifdef DEBUG
+copts  = $(comcopts) -Od -Z7 -FR
+lopts  = $(comlopts) -debug
+!else
+copts  = $(comcopts) -Ox
+lopts  = $(comlopts) -release
+!endif
+
+cflagsdll = $(copts) /DDYNAMIC
+cflagsexe = $(copts)
+lflagsdll = $(lopts) -dll -implib:$(*B).lib
+lflagsexe = $(lopts) 
+
+objsdll = $(ABBREV)dll.obj packdll.obj dll_res.obj
+objsexe = loader.obj getopt.obj $(ABBREV)exe.obj packexe.obj exe_res.obj
+
+ccdll = cl $(cflagsdll) $(listopt)
+ccexe = cl $(cflagsexe) $(listopt)
+
+H1=$(SRCDIR)\defines.h
+H2=$(CURLINCDIR)\curl\curl.h
+H3=$(COMMONSRCDIR)\rxpack.h $(COMMONSRCDIR)\rxdef.h $(SRCDIR)\$(PROJ).h
+
+all: $(PROJ).exe $(PROJ).dll dist
+
+#
+# These function only required for EXE
+#
+getopt.obj: $(SRCDIR)\getopt.c
+	$(ccexe) /Fogetopt.obj $(SRCDIR)\getopt.c
+
+loader.obj: $(SRCDIR)\loader.c $(H1) $(H3)
+	$(ccexe) /Foloader.obj $(SRCDIR)\loader.c
+
+#
+# These modules are the package-specific modules; both for DLL and EXE
+#
+
+$(ABBREV)dll.obj: $(SRCDIR)\$(PROJ).c $(H1) $(H2) $(H3)
+	$(ccdll) /Fo$(ABBREV)dll.obj $(SRCDIR)\$(PROJ).c
+
+$(ABBREV)exe.obj: $(SRCDIR)\$(PROJ).c $(H1) $(H2) $(H3)
+	$(ccexe) /Fo$(ABBREV)exe.obj $(SRCDIR)\$(PROJ).c
+
+
+
+#
+# These modules are common modules; both for DLL and EXE
+#
+
+packdll.obj: $(COMMONSRCDIR)\rxpack.c $(H1) $(H3)
+	$(ccdll) /Fopackdll.obj $(COMMONSRCDIR)\rxpack.c
+
+packexe.obj: $(COMMONSRCDIR)\rxpack.c $(H1) $(H3)
+	$(ccexe) /Fopackexe.obj $(COMMONSRCDIR)\rxpack.c
+
+#
+# Rules for resources
+#
+exe_res.obj exe_res.res: $(SRCDIR)\$(PROJ)w32.rc
+	-copy $(SRCDIR)\$(PROJ)w32.ico .
+	rc /r /foexe_res.res /D$(INT) /I$(SRCDIR) $(SRCDIR)\$(PROJ)w32.rc
+	cvtres /MACHINE:IX86 /NOLOGO /OUT:exe_res.obj exe_res.res
+
+dll_res.obj dll_res.res: $(SRCDIR)\$(PROJ)w32.rc
+	-copy $(SRCDIR)\$(PROJ)w32.ico .
+	rc /r /fodll_res.res /DDYNAMIC /D$(INT) /I$(SRCDIR) $(SRCDIR)\$(PROJ)w32.rc
+	cvtres /MACHINE:IX86 /NOLOGO /OUT:dll_res.obj dll_res.res
+
+#
+# Rules for executables and DLLs
+#
+$(PROJ).dll: $(objsdll)
+	link $(lflagsdll) $(objsdll) -out:$(PROJ).dll $(CURLLIB) $(CCLIBS) $(REXXLIBS) -def:$(SRCDIR)\$(PROJ)w32.def
+
+$(PROJ).exe: $(objsexe)
+	link $(lflagsexe) $(objsexe) -out:$(PROJ).exe $(CURLLIB) $(CCLIBS) $(REXXLIBS)
+
+#
+# Rules for distribution
+#
+dist: $(DISTDIR)
+	copy rexxcurl.exe $(DISTDIR)
+	copy rexxcurl.dll $(DISTDIR)
+	copy $(SRCDIR)\demo\testcurl.rexx $(DISTDIR)
+	copy $(SRCDIR)\file_id.diz.w32 $(DISTDIR)\file_id.diz
+	copy $(SRCDIR)\COPYING-LIB $(DISTDIR)
+	copy $(SRCDIR)\HISTORY $(DISTDIR)
+	copy $(SRCDIR)\README $(DISTDIR)
+	copy $(SRCDIR)\TODO $(DISTDIR)
+	cd $(DISTDIR)
+	-del *.zip
+	zip rexxcurl$(VER)_w32 *
+
+$(DISTDIR):
+	-mkdir $(DISTDIR)
+

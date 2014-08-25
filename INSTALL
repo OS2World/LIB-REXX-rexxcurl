@@ -1,0 +1,116 @@
+                             Rexx/CURL
+
+                             Contents
+                             --------
+              1. Installation of Rexx/CURL on Unix
+              2. Installation of Rexx/CURL on OS/2 and Windows NT/9x/2k
+              3. Testing the installation
+
+Please read ALL of these notes before building Rexx/CURL!
+
+
+1. Installation of Rexx/CURL on Unix
+====================================
+To install Rexx/CURL, unpack the archive (you have probably already done
+that), run the configure script supplying the necessary command line 
+parameters.  To see what parameters the configure script recognises,
+type ./configure --help
+
+Because Rexx/CURL can be configured to run with different Rexx interpreters, 
+you must specify the Rexx interpreter you plan on using.
+To see the options available, run:
+
+configure --help
+
+If you are interested in building different versions of Rexx/CURL on 
+the one platform; like a Regina version and a REXX/imc version
+you can do something like this.
+
+To build a version of Rexx/CURL with Regina:
+
+mkdir regina
+cd regina
+../configure --with-rexx=regina
+make
+
+To build a version of Rexx/CURL with REXX/imc:
+
+mkdir rexximc
+cd rexximc
+../configure --with-rexx=rexximc
+make
+
+The configure script looks in some common places for the Rexx libraries 
+and header files. These are defined in the configure script. Some of the
+common directories are $HOME/include, /usr/local/include for header files
+and $HOME/lib and /usr/local/lib for libraries.  There are several others;
+see configure for the full list.
+
+If you have installed your Rexx interpreter in a location that the
+configure script cannot find, there are two ways in which you can tell
+the configure script where to look.
+1) Set environment variables:
+   This is useful if you only ever build Rexx extensions with the one
+   Rexx interpreter and the interpreter is not in one of the common locations.
+   REXXINCDIR -> directory where the Rexx interpreter header files are
+   REXXLIBDIR -> directory where the Rexx interpreter library files are
+2) Specify the directories on the configure command line
+   This is useful if you wnat to build with different interpreters.
+   and the interpreters are not in one of the common locations.
+   --with-rexxincdir=dir -> where dir is the location of the header files
+   --with-rexxlibdir=dir -> where dir is the location of the library files
+
+The directory search order is as follows:
+- configure command line options
+- environment variables
+- builtin, common directories
+
+Once you have Rexx/CURL built, it can then be installed.  By default, the
+Rexx/CURL executable will be installed into /usr/bin, while the 
+dynamically loadable external function package will be installed into 
+/usr/lib.  The base path "/usr" can be changed by adding the 
+--prefix=path (where path is the base path) to the configure command.
+eg. to install Rexx/CURL into /opt/bin and /opt/lib, 
+configure --prefix=/opt ...
+
+
+To install Rexx/CURL, run "make install"
+
+If the platform you are installing Rexx/CURL on does not support dynamically
+loadable libraries, you may get some errors during the "make install";
+these can be ignored.
+
+Where the platform does support dynamically loadable libraries, you may
+need to tell your operating system where these shared libraries are. The
+method of doing this varies between operating systems, but generally
+involves adding the installed directory to an environment variable such
+as LD_LIBRARY_PATH, LIBPATH, etc.
+
+
+2. Installation of Rexx/CURL on OS/2 and Windows NT/9x/2k
+=========================================================
+(OS/2 is not supported yet)
+Unpack the archive. You've probably already done this.
+Copy all executables and DLLs into a directory already in the system
+PATH, or to a new directory, but remember to include this directory
+in the PATH. On Windows 95/98, you will need to reboot before the
+new PATH is effective.
+This version of Rexx/CURL is built without SSL support.
+
+3. Testing the installation
+===========================
+Once you have the Rexx/CURL executables and DLLs (or shared libraries)
+installed, run the demo program; testcurl.rexx.
+
+You will need to be able to connect to a machine that is running a web
+server to do this.
+
+First run testcurl.rexx with the supplied Rexx/CURL executable to display
+the source of a web page. eg to display the source to the Rexx/CURL
+home page:
+rexxcurl http://rexxcurl.sourceforge.net/
+
+Next run testcurl.rexx directly with your Rexx interpreter: (using Regina
+as the example):
+regina http://rexxcurl.sourceforge.net/
+
